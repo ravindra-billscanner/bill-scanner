@@ -1,0 +1,10 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm install && node -e \"const{Pool}=require('pg');const p=new Pool({connectionString:process.env.DATABASE_URL,ssl:{rejectUnauthorized:false}});const fs=require('fs');p.query(fs.readFileSync('./migrations/001_initial.sql','utf8')).then(()=>{console.log('Migration complete');p.end()}).catch(e=>{console.error('Migration error:',e.message);p.end()})\""
+
+[deploy]
+startCommand = "node src/index.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
