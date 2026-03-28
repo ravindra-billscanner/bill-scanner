@@ -53,10 +53,19 @@ app.listen(PORT, () => {
   console.log(`API base: /api`);
 });
 
+// ✅ FIRST: Routes
 app.get('/', (req, res) => {
   res.send('Bill Scanner API is running 🚀');
 });
 
 app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
+});
+
+// ❌ LAST: 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    data: null,
+    error: 'Route not found'
+  });
 });
