@@ -52,3 +52,11 @@ app.listen(PORT, () => {
   console.log(`WhatsApp webhook: POST /webhook`);
   console.log(`API base: /api`);
 });
+
+app.get('/', (req, res) => {
+  res.send('Bill Scanner API is running 🚀');
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK' });
+});
