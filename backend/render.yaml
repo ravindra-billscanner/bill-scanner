@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: bill-scanner-backend
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: "npm install && node -e \"const{Pool}=require('pg');const p=new Pool({connectionString:process.env.DATABASE_URL,ssl:{rejectUnauthorized:false}});const fs=require('fs');p.query(fs.readFileSync('./migrations/001_initial.sql','utf8')).then(()=>{console.log('Migration complete');p.end()}).catch(e=>{console.error('Migration error:',e.message);p.end()})\""
+    startCommand: "node src/index.js"
+    healthCheckPath: /health
+    healthCheckTimeout: 30
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+
+databases:
+  - name: bill-scanner-db
+    databaseName: billscanner
+    plan: free
+    region: oregon
+    version: "14"
