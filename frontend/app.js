@@ -118,20 +118,4 @@ function App() {
   );
 }
 
-const API_URL = process.env.REACT_APP_API_URL;
-
-useEffect(() => {
-  fetch(`${API_URL}/health`)
-    .then(res => res.json())
-    .then(data => console.log(data));
-}, []);
-
-REACT_APP_API_URL = "https://labalab-billscanner.onrender.com";
-
-useEffect(() => {
-  fetch(`${API_URL}/health`)
-    .then(res => res.json())
-    .then(data => console.log("Backend response:", data));
-}, []);
-
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
