@@ -67,8 +67,14 @@ router.put('/password', async (req, res) => {
 router.post('/migrate', async (req, res) => {
   try {
     console.log('🔧 Running database migration...');
+    console.log('🔌 Testing database connection...');
+
+    // Test connection
+    const testConn = await pool.query('SELECT NOW()');
+    console.log('✅ Database connected:', testConn.rows[0]);
 
     // Create admins table
+    console.log('📝 Creating admins table...');
     await pool.query(`
       CREATE TABLE IF NOT EXISTS admins (
         id SERIAL PRIMARY KEY,
@@ -81,6 +87,7 @@ router.post('/migrate', async (req, res) => {
     console.log('✅ admins table ready');
 
     // Create customers table
+    console.log('📝 Creating customers table...');
     await pool.query(`
       CREATE TABLE IF NOT EXISTS customers (
         id SERIAL PRIMARY KEY,
@@ -95,6 +102,7 @@ router.post('/migrate', async (req, res) => {
     console.log('✅ customers table ready');
 
     // Create bills table
+    console.log('📝 Creating bills table...');
     await pool.query(`
       CREATE TABLE IF NOT EXISTS bills (
         id SERIAL PRIMARY KEY,
@@ -111,6 +119,7 @@ router.post('/migrate', async (req, res) => {
     console.log('✅ bills table ready');
 
     // Create bill_items table
+    console.log('📝 Creating bill_items table...');
     await pool.query(`
       CREATE TABLE IF NOT EXISTS bill_items (
         id SERIAL PRIMARY KEY,
@@ -126,6 +135,7 @@ router.post('/migrate', async (req, res) => {
     console.log('✅ bill_items table ready');
 
     // Insert default admin user
+    console.log('🔐 Creating admin user...');
     const hash = await bcrypt.hash('changeme', 12);
     await pool.query(
       'INSERT INTO admins (username, password_hash) VALUES ($1, $2) ON CONFLICT (username) DO NOTHING',
@@ -136,7 +146,10 @@ router.post('/migrate', async (req, res) => {
     res.json({ data: { message: 'Database migration completed successfully' } });
   } catch (err) {
     console.error('❌ Migration error:', err.message);
-    res.status(500).json({ data: null, error: 'Migration error: ' + err.message });
+    console.error('❌ Full error:', JSON.stringify(err, null, 2));
+    console.error('❌ Error code:', err.code);
+    console.error('❌ Error detail:', err.detail);
+    res.status(500).json({ data: null, error: 'Migration error: ' + (err.message || JSON.stringify(err)) });
   }
 });
 
