@@ -5,16 +5,21 @@ const cors    = require('cors');
 const app = express();
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
+// Remove trailing slashes from FRONTEND_URL
+const frontendUrl = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.replace(/\/$/, '') : '';
+
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
+  frontendUrl,
   'http://localhost:8080',
   'http://localhost:3000',
   'http://127.0.0.1:8080',
+  'https://bill-scanner-two.vercel.app',
 ].filter(Boolean);
 
 console.log('=== CORS Configuration ===');
 console.log('Allowed Origins:', allowedOrigins);
 console.log('FRONTEND_URL env var:', process.env.FRONTEND_URL);
+console.log('Cleaned FRONTEND_URL:', frontendUrl);
 console.log('========================');
 
 app.use(cors({
