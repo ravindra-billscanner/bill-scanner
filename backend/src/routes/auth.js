@@ -64,4 +64,80 @@ router.put('/password', async (req, res) => {
   }
 });
 
+router.post('/migrate', async (req, res) => {
+  try {
+    console.log('🔧 Running database migration...');
+
+    // Create admins table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS admins (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(100) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('✅ admins table ready');
+
+    // Create customers table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS customers (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        whatsapp_id VARCHAR(50) UNIQUE,
+        email VARCHAR(100),
+        phone VARCHAR(20),
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('✅ customers table ready');
+
+    // Create bills table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS bills (
+        id SERIAL PRIMARY KEY,
+        customer_id INTEGER REFERENCES customers(id) ON DELETE CASCADE,
+        store_name VARCHAR(200),
+        bill_date DATE,
+        total_amount DECIMAL(10,2),
+        currency VARCHAR(10),
+        raw_data JSONB,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('✅ bills table ready');
+
+    // Create bill_items table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS bill_items (
+        id SERIAL PRIMARY KEY,
+        bill_id INTEGER REFERENCES bills(id) ON DELETE CASCADE,
+        item_name VARCHAR(200),
+        brand VARCHAR(100),
+        category VARCHAR(50),
+        quantity DECIMAL(10,2),
+        price DECIMAL(10,2),
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('✅ bill_items table ready');
+
+    // Insert default admin user
+    const hash = await bcrypt.hash('changeme', 12);
+    await pool.query(
+      'INSERT INTO admins (username, password_hash) VALUES ($1, $2) ON CONFLICT (username) DO NOTHING',
+      ['admin', hash]
+    );
+    console.log('✅ admin user ready (password: changeme)');
+
+    res.json({ data: { message: 'Database migration completed successfully' } });
+  } catch (err) {
+    console.error('❌ Migration error:', err.message);
+    res.status(500).json({ data: null, error: 'Migration error: ' + err.message });
+  }
+});
+
 module.exports = router;
