@@ -22,6 +22,14 @@ console.log('FRONTEND_URL env var:', process.env.FRONTEND_URL);
 console.log('Cleaned FRONTEND_URL:', frontendUrl);
 console.log('========================');
 
+console.log('🔌 DATABASE CONFIGURATION:');
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? '✅ SET' : '❌ NOT SET');
+if (process.env.DATABASE_URL) {
+  const masked = process.env.DATABASE_URL.replace(/:[^@]*@/, ':****@');
+  console.log('Connection string (masked):', masked);
+}
+console.log('========================');
+
 app.use(cors({
   origin: (origin, cb) => {
     console.log('📨 Incoming request origin:', origin);
