@@ -1,6 +1,11 @@
 // app.js — root React app, hash router, AppContext
 // Dependencies already on window.BS from prior script tags
 
+// TEMPORARILY BYPASS AUTH: Set dummy token for testing
+if (!BS.auth.getToken()) {
+  BS.auth.setToken('dummy-test-token-for-development');
+}
+
 BS.AppContext = React.createContext(null);
 
 const NAV = [
@@ -70,10 +75,10 @@ function App() {
     }
   }, []);
 
-  // Not logged in — show login screen
-  if (!loggedIn) {
-    return <BS.Login onLogin={() => { setLoggedIn(true); setLoading(true); }} />;
-  }
+  // TEMPORARILY DISABLED: Not logged in — show login screen
+  // if (!loggedIn) {
+  //   return <BS.Login onLogin={() => { setLoggedIn(true); setLoading(true); }} />;
+  // }
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', flexDirection: 'column', gap: 16 }}>
