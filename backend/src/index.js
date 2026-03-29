@@ -12,13 +12,19 @@ const allowedOrigins = [
   'http://127.0.0.1:8080',
 ].filter(Boolean);
 
+console.log('=== CORS Configuration ===');
 console.log('Allowed Origins:', allowedOrigins);
-console.log('FRONTEND_URL env:', process.env.FRONTEND_URL);
+console.log('FRONTEND_URL env var:', process.env.FRONTEND_URL);
+console.log('========================');
 
 app.use(cors({
   origin: (origin, cb) => {
-    console.log('Incoming request origin:', origin);
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    console.log('📨 Incoming request origin:', origin);
+    if (!origin || allowedOrigins.includes(origin)) {
+      console.log('✅ CORS allowed for:', origin);
+      return cb(null, true);
+    }
+    console.log('❌ CORS blocked for:', origin);
     cb(new Error('Not allowed by CORS'));
   },
   credentials: true,
@@ -40,7 +46,7 @@ app.use('/api/analytics', guard, require('./routes/analytics'));
 app.use((req, res) => res.status(404).json({ data: null, error: 'Route not found' }));
 
 app.use((err, req, res, _next) => {
-  console.error('Unhandled error:', err);
+  console.error('❌ Unhandled error:', err.message);
   res.status(500).json({ data: null, error: 'Internal server error' });
 });
 
