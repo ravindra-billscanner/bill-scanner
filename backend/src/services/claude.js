@@ -15,10 +15,14 @@ The JSON must follow this exact schema:
   "total": "number",
   "currency": "ISO 4217 code e.g. USD, EUR, GBP, INR",
   "payment_method": "string or null",
+  "bill_contact": {
+    "email": "string or null (extract from bill if visible)",
+    "phone": "string or null (extract customer/merchant phone if visible)"
+  },
   "items": [
     {
       "name": "string",
-      "brand": "string or null",
+      "brand": "string or null (IMPORTANT: extract product brand if visible, e.g. 'Coca-Cola', 'Samsung', 'Nike')",
       "category": "one of: Food & Grocery, Electronics, Clothing & Apparel, Health & Beauty, Home & Garden, Dining & Restaurants, Fuel & Transport, Other",
       "quantity": "number (default 1)",
       "unit": "string or null",
@@ -31,6 +35,8 @@ Rules:
 - Return ONLY the JSON. No preamble, no markdown fences.
 - Use null for unknown optional fields.
 - Currency: $ -> USD, euro -> EUR, pound -> GBP, rupee/Rs -> INR, default USD.
+- BRAND EXTRACTION: For each item, look for product branding information. Examples: 'Amul Butter', 'Apple iPhone', 'Pepsi', 'Samsung TV'. If visible, extract the brand name. Otherwise null.
+- EMAIL/PHONE: If the bill shows a customer email, merchant phone, or receipt identifier with contact info, extract it. Otherwise null.
 - If not a bill: {"error": "not_a_bill"}
 - Normalize item names to title case.`;
 

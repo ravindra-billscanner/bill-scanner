@@ -9,6 +9,8 @@ function BillReview() {
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [newCustomer, setNewCustomer] = useState({ name: '', email: '' });
   const [customerSearch, setCustomerSearch] = useState('');
+  const [autoLinked, setAutoLinked] = useState(false);
+  const [autoLinkedName, setAutoLinkedName] = useState('');
 
   useEffect(() => {
     if (pendingBill) {
@@ -16,6 +18,17 @@ function BillReview() {
       b.items = (b.items || []).map(i => ({ name: '', brand: '', category: 'Other', quantity: 1, unit_price: null, price: 0, ...i }));
       b.id = b.id || (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
       setBill(b);
+
+      // Handle auto-linked customer from backend
+      if (pendingBill.auto_linked && pendingBill.customer_id) {
+        setAutoLinked(true);
+        setAutoLinkedName(pendingBill.customer_name || '');
+        setCustomerMode('existing');
+        setSelectedCustomerId(pendingBill.customer_id);
+      } else {
+        setAutoLinked(false);
+        setAutoLinkedName('');
+      }
     }
   }, [pendingBill]);
 
@@ -121,7 +134,12 @@ function BillReview() {
                   <tr key={idx}>
                     <td><input className="input input-sm" value={item.name} onChange={e => updItem(idx, 'name', e.target.value)} placeholder="Item name" /></td>
                     <td><input className="input input-sm" value={item.brand || ''} onChange={e => updItem(idx, 'brand', e.target.value)} placeholder="Brand" /></td>
-                    <td><select className="input input-sm" value={item.category} onChange={e => updItem(idx, 'category', e.target.value)}>{BS.CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <select className="input input-sm" value={item.category} onChange={e => updItem(idx, 'category', e.target.value)}>{BS.CATEGORIES.map(c => <option key={c}>{c}</option>)}</select>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: -2 }}>💡 Claude suggested</span>
+                      </div>
+                    </td>
                     <td><input className="input input-sm" type="number" min="0" value={item.quantity} onChange={e => updItem(idx, 'quantity', parseFloat(e.target.value) || 1)} /></td>
                     <td><input className="input input-sm" type="number" step="0.01" value={item.price} onChange={e => updItem(idx, 'price', parseFloat(e.target.value) || 0)} /></td>
                     <td><button style={{ color: 'var(--red)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 8px' }} onClick={() => setBill(prev => ({ ...prev, items: prev.items.filter((_, i) => i !== idx) }))}>✕</button></td>
@@ -132,9 +150,15 @@ function BillReview() {
           </div>
           <div className="card" style={{ marginBottom: 16 }}>
             <div className="card-title">Link to Customer</div>
+            {autoLinked && (
+              <div style={{ background: 'var(--success-dim)', border: '1px solid var(--success)', borderRadius: 6, padding: 12, marginBottom: 12, fontSize: 13 }}>
+                ✅ <strong>Auto-linked to:</strong> {autoLinkedName}
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Found by email or phone extracted from the bill</div>
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
               {[['existing','👤 Existing'],['new','➕ New Customer'],['skip','⏭ Skip']].map(([m, l]) => (
-                <button key={m} className={'btn btn-sm ' + (customerMode === m ? 'btn-primary' : 'btn-ghost')} onClick={() => setCustomerMode(m)}>{l}</button>
+                <button key={m} className={'btn btn-sm ' + (customerMode === m ? 'btn-primary' : 'btn-ghost')} onClick={() => setCustomerMode(m)} disabled={autoLinked && m !== 'existing'}>{l}</button>
               ))}
             </div>
             {customerMode === 'existing' && (
